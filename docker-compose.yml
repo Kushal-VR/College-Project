@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cctv_attendance_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - BACKEND_HOST=0.0.0.0
+      - BACKEND_PORT=8000
+    volumes:
+      - ./backend:/app
+      - attendance_data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cctv_attendance_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  attendance_data:
