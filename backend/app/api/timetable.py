@@ -453,7 +453,7 @@ def take_period_attendance(
                     best_sim = sim
                     best_student = enrolled_student_map.get(sid)
 
-        is_matched = bool(best_student and best_sim >= 0.68 and not is_spoof)
+        is_matched = bool(best_student and best_sim >= 0.58 and not is_spoof)
 
         face_item = {
             "bounding_box": [int(x), int(y), int(fw), int(fh)],

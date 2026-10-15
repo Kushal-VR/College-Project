@@ -286,13 +286,13 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition disabled:opacity-50"
+                  className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
-                    <span>Verifying Credentials...</span>
+                    <span>Authenticating...</span>
                   ) : (
                     <>
-                      <span>Continue to 2FA Verification</span>
+                      <span>Sign In to Portal</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

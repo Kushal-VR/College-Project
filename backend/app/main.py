@@ -14,11 +14,14 @@ async def lifespan(app: FastAPI):
     init_db()
     
     # Seed default users
-    db = SessionLocal()
     try:
-        seed_default_users(db)
-    finally:
-        db.close()
+        db = SessionLocal()
+        try:
+            seed_default_users(db)
+        finally:
+            db.close()
+    except Exception as exc:
+        logger.warning(f"Could not seed default users: {exc}")
         
     yield
     logger.info(f"Shutting down {settings.PROJECT_NAME}...")

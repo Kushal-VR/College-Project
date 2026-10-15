@@ -54,6 +54,29 @@ export default function EnrollmentPage() {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
 
   useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/academic/students`, {
+          headers: getAuthHeaders(token),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStudents(data);
+          if (data.length > 0 && !selectedStudent) {
+            setSelectedStudent(data[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load students", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, [token]);
+
+  useEffect(() => {
     if (typeof navigator !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
       navigator.mediaDevices.enumerateDevices().then((devices) => {
         const videoInputs = devices.filter((d) => d.kind === "videoinput");
@@ -69,6 +92,7 @@ export default function EnrollmentPage() {
   const startWebcam = async (devId?: string) => {
     setMessage(null);
     stopWebcam();
+    setCapturedImage(null);
     try {
       const activeId = devId || selectedDeviceId;
       let stream: MediaStream;
@@ -87,6 +111,8 @@ export default function EnrollmentPage() {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
       }
 
+      setWebcamActive(true);
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.muted = true;
@@ -95,7 +121,6 @@ export default function EnrollmentPage() {
         } catch {
           // play failed or autoplay policy
         }
-        setWebcamActive(true);
       }
     } catch (err: unknown) {
       console.error("Camera access error:", err);
@@ -319,14 +344,20 @@ export default function EnrollmentPage() {
 
           {/* Viewport Viewfinder */}
           <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-square flex items-center justify-center">
-            {webcamActive ? (
-              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover mirror" />
-            ) : capturedImage ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-cover ${webcamActive ? "block" : "hidden"}`}
+            />
+            {!webcamActive && capturedImage && (
               <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
-            ) : (
+            )}
+            {!webcamActive && !capturedImage && (
               <div className="text-center p-6 text-slate-400 space-y-2">
                 <ScanFace className="w-16 h-16 mx-auto opacity-40 text-blue-400" />
-                <p className="text-xs text-slate-400">Webcam inactive. Start camera or upload face photo.</p>
+                <p className="text-xs text-slate-400">Webcam inactive. Click &quot;Start Camera&quot; or upload a photo.</p>
               </div>
             )}
 

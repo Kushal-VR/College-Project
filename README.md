@@ -27,7 +27,7 @@ cp .env.example .env
 pip install -r backend/requirements.txt
 
 # Run backend API server
-uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload
 ```
 API Documentation available at: `http://127.0.0.1:8000/api/docs`  
 Health check endpoint: `http://127.0.0.1:8000/api/health`

@@ -13,8 +13,10 @@ if settings.DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
     engine_kwargs["connect_args"] = connect_args
 else:
-    # PostgreSQL / Supabase pool configuration
+    # PostgreSQL / Supabase pool configuration with fast fallback timeout
+    connect_args["connect_timeout"] = 3
     engine_kwargs.update({
+        "connect_args": connect_args,
         "pool_size": 10,
         "max_overflow": 20,
         "pool_pre_ping": True,
@@ -23,9 +25,10 @@ else:
 
 try:
     engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
 except Exception as e:
-    logger.error(f"Failed to create database engine with URL {settings.DATABASE_URL}: {e}")
-    # Fallback to local SQLite if remote PostgreSQL connection string failed parsing
+    logger.warning(f"Unable to connect to primary database ({settings.DATABASE_URL}): {e}. Falling back to SQLite dev database.")
     engine = create_engine("sqlite:///./attendance.db", connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
