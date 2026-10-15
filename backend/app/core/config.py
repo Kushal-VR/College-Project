@@ -4,9 +4,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 from dotenv import load_dotenv
 
-# Load .env from root or current directory
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"))
-load_dotenv()
+# Load .env from root or current directory with override enabled
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"), override=True)
+load_dotenv(override=True)
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "kushalvr12@gmail.com")
     SMTP_FROM_NAME: str = os.getenv("SMTP_FROM_NAME", "Smart CCTV Attendance Ledger")
     OTP_EXPIRE_MINUTES: int = int(os.getenv("OTP_EXPIRE_MINUTES", "5"))
-    REQUIRE_EMAIL_OTP: bool = os.getenv("REQUIRE_EMAIL_OTP", "true").lower() == "true"
+    REQUIRE_EMAIL_OTP: bool = os.getenv("REQUIRE_EMAIL_OTP", "false").lower() == "true"
     
     # CORS
     CORS_ORIGINS: Union[List[str], str] = [

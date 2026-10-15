@@ -135,9 +135,60 @@ def seed_default_users(db: Session):
         db.add(subj)
         db.flush()
 
+    # 6. Default Student Enrollment
+    enrollment = db.query(Enrollment).filter(
+        Enrollment.student_id == student_profile.id,
+        Enrollment.subject_id == subj.id
+    ).first()
+    if not enrollment:
+        enrollment = Enrollment(
+            student_id=student_profile.id,
+            subject_id=subj.id,
+            academic_year="2026-2027",
+            status="ENROLLED"
+        )
+        db.add(enrollment)
+        db.flush()
+
+    # 7. Default Timetable Periods (Monday through Saturday, Periods 1 to 6)
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    periods = [
+        (1, "09:00", "10:00"),
+        (2, "10:00", "11:00"),
+        (3, "11:15", "12:15"),
+        (4, "13:00", "14:00"),
+        (5, "14:00", "15:00"),
+        (6, "15:00", "16:00"),
+    ]
+    for section_name in ["A", "B"]:
+        for day in days:
+            for p_num, s_time, e_time in periods:
+                existing_slot = db.query(Timetable).filter(
+                    Timetable.subject_id == subj.id,
+                    Timetable.day_of_week == day,
+                    Timetable.period_number == p_num,
+                    Timetable.section == section_name
+                ).first()
+                if not existing_slot:
+                    new_slot = Timetable(
+                        subject_id=subj.id,
+                        faculty_id=faculty_profile.id,
+                        camera_id=cam1.id if cam1 else None,
+                        day_of_week=day,
+                        period_number=p_num,
+                        start_time=s_time,
+                        end_time=e_time,
+                        classroom="Room 302",
+                        section=section_name,
+                        batch_year="2023-2027",
+                        is_recurring=True,
+                        is_active=True
+                    )
+                    db.add(new_slot)
+
     try:
         db.commit()
-        logger.info("Administrator baseline synchronized successfully.")
+        logger.info("Administrator baseline and timetable schedule synchronized successfully.")
     except Exception as exc:
         db.rollback()
         logger.error(f"Failed to seed database state: {exc}")

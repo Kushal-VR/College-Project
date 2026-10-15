@@ -274,7 +274,7 @@ def recognize_face_frame(
                 except Exception:
                     pass
 
-            is_matched = bool(best_student and best_sim >= 0.68)
+            is_matched = bool(best_student and best_sim >= 0.58)
             if is_matched:
                 # Automatic attendance recording when session or timetable is active
                 if effective_session_id and not is_spoof:
