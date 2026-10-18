@@ -14,10 +14,12 @@ from app.models.academic import Student, Subject, Enrollment
 from app.models.biometrics import StudentFaceEmbedding, SecurityAuditLog, SecurityEventType
 from app.services.biometric_service import (
     detect_faces,
+    detect_faces_detailed,
     extract_face_embedding,
     compute_cosine_similarity,
     check_anti_spoofing,
-    encode_image_to_base64
+    encode_image_to_base64,
+    SFACE_MATCH_THRESHOLD
 )
 
 class StudentPresenceTracker:
@@ -110,9 +112,10 @@ class ClassroomSessionManager:
         events = []
         recognized_student_ids = set()
 
-        # 1. Face Detection
-        faces = detect_faces(frame)
-        for (x, y, fw, fh) in faces:
+        # 1. Face Detection & Matching
+        faces, raw_faces = detect_faces_detailed(frame)
+        for idx, (x, y, fw, fh) in enumerate(faces):
+            face_raw = raw_faces[idx] if raw_faces is not None and len(raw_faces) > idx else None
             face_crop = frame[max(0, y):min(h, y+fh), max(0, x):min(w, x+fw)]
             if face_crop.size == 0:
                 continue
@@ -136,12 +139,12 @@ class ClassroomSessionManager:
                 db.add(audit)
                 continue
 
-            # Extract normalized embedding
-            emb = extract_face_embedding(face_crop)
+            # Extract normalized embedding with landmark alignment
+            emb = extract_face_embedding(face_crop, full_image=frame, face_raw=face_raw)
             
             # Find best matching student
             best_match_id = None
-            best_sim = 0.0
+            best_sim = -1.0
             for sid, emb_list in student_embeddings.items():
                 for stored_emb in emb_list:
                     sim = compute_cosine_similarity(emb, stored_emb)
@@ -149,8 +152,8 @@ class ClassroomSessionManager:
                         best_sim = sim
                         best_match_id = sid
 
-            # Threshold for positive match: 0.68+
-            if best_match_id is not None and best_sim >= 0.68:
+            # Threshold for positive match: SFACE_MATCH_THRESHOLD (0.40)
+            if best_match_id is not None and best_sim >= SFACE_MATCH_THRESHOLD:
                 student = enrolled_student_map[best_match_id]
                 recognized_student_ids.add(best_match_id)
                 

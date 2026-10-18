@@ -579,44 +579,42 @@ export default function CCTVPage() {
     } catch (err) {
       console.warn("Attendance capture network notice:", err);
     } finally {
-      const firstStudent = returnedStudents[0] || recognizedFaces[0];
-      setPortalAcceptancePreview({
-        student_name:
-          firstStudent?.full_name || firstStudent?.student_name || "Kushal Student",
-        roll_number: firstStudent?.roll_number || "CS-2024-001",
-        department: "Dept of Computer Science & Engineering",
-        section: currentSlot.section,
-        semester: "Sem 5",
-        period_number: currentSlot.period_number,
-        subject_code: currentSlot.subject_code || "CS301",
-        subject_name: currentSlot.subject_name || "Computer Networks",
-        classroom: currentSlot.classroom,
-        faculty_name: currentSlot.faculty_name || "Dr. Alan Turing",
-        timestamp: new Date().toLocaleTimeString(),
-        verification_method:
-          firstStudent?.verification_method || "Multi-Face AI Biometrics",
-        confidence: firstStudent?.confidence || 0.88,
-        liveness_score: firstStudent?.liveness_score || 0.95,
-        status: "PRESENT",
-        accepted_students:
-          returnedStudents.length > 0
-            ? returnedStudents.map((rs: any) => ({
-                student_name: rs.full_name || rs.student_name,
-                roll_number: rs.roll_number,
-                confidence: rs.confidence || 0.88,
-                verification_method: rs.verification_method || "FACE_RECOGNITION",
-                status: "PRESENT",
-              }))
-            : [
-                {
-                  student_name: "Kushal Student",
-                  roll_number: "CS-2024-001",
-                  confidence: 0.88,
-                  verification_method: "FACE_RECOGNITION",
-                  status: "PRESENT",
-                },
-              ],
-      });
+      if (returnedStudents.length > 0) {
+        const firstStudent = returnedStudents[0];
+        setPortalAcceptancePreview({
+          student_name:
+            firstStudent?.full_name || firstStudent?.student_name || "Student",
+          roll_number: firstStudent?.roll_number || "",
+          department: "Dept of Computer Science & Engineering",
+          section: currentSlot.section,
+          semester: "Sem 5",
+          period_number: currentSlot.period_number,
+          subject_code: currentSlot.subject_code || "CS301",
+          subject_name: currentSlot.subject_name || "Computer Networks",
+          classroom: currentSlot.classroom,
+          faculty_name: currentSlot.faculty_name || "Dr. Alan Turing",
+          timestamp: new Date().toLocaleTimeString(),
+          verification_method:
+            firstStudent?.verification_method || "Multi-Face AI Biometrics",
+          confidence: firstStudent?.confidence || 0.88,
+          liveness_score: firstStudent?.liveness_score || 0.95,
+          status: "PRESENT",
+          accepted_students: returnedStudents.map((rs: any) => ({
+            student_name: rs.full_name || rs.student_name,
+            roll_number: rs.roll_number,
+            confidence: rs.confidence || 0.88,
+            verification_method: rs.verification_method || "FACE_RECOGNITION",
+            status: "PRESENT",
+          })),
+        });
+      } else {
+        setPortalAcceptancePreview(null);
+        if (!attendanceResult) {
+          setAttendanceResult(
+            `Period ${currentSlot.period_number} Scan Complete: No enrolled students recognized in this camera frame. (0 Present)`
+          );
+        }
+      }
       setTakingAttendance(false);
     }
   };
@@ -735,7 +733,8 @@ export default function CCTVPage() {
                   ctx.stroke();
 
                   // Student Label
-                  const label = `${face.full_name || "Kushal Student"} (${face.roll_number || "CS-2024-001"}) • ${(face.confidence * 100).toFixed(0)}% MATCH`;
+                  const rollTag = face.roll_number ? ` (${face.roll_number})` : "";
+                  const label = `${face.full_name || "Enrolled Student"}${rollTag} • ${(face.confidence * 100).toFixed(0)}% MATCH`;
                   ctx.font = "bold 12px sans-serif";
                   const textWidth = ctx.measureText(label).width;
                   ctx.fillStyle = "rgba(16, 185, 129, 0.95)";
@@ -760,12 +759,12 @@ export default function CCTVPage() {
                   ctx.font = "bold 11px sans-serif";
                   ctx.fillText("ALERT: SPOOF DETECTED", x + 8, Math.max(0, y - 26) + 18);
                 } else {
-                  ctx.strokeStyle = "#06b6d4";
+                  ctx.strokeStyle = "#94a3b8";
                   ctx.lineWidth = 2;
                   ctx.strokeRect(x, y, w, h);
-                  const label = `Face #${idx + 1}: Live Person`;
-                  ctx.fillStyle = "rgba(6, 182, 212, 0.95)";
-                  ctx.fillRect(x, Math.max(0, y - 26), 140, 26);
+                  const label = `Face #${idx + 1}: Unregistered / Unknown`;
+                  ctx.fillStyle = "rgba(51, 65, 85, 0.95)";
+                  ctx.fillRect(x, Math.max(0, y - 26), 215, 26);
                   ctx.fillStyle = "#ffffff";
                   ctx.font = "bold 11px sans-serif";
                   ctx.fillText(label, x + 8, Math.max(0, y - 26) + 17);

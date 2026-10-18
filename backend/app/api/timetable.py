@@ -31,9 +31,12 @@ from app.services.biometric_service import (
     decode_base64_image,
     detect_and_decode_id_card,
     detect_faces,
+    detect_faces_detailed,
     extract_face_embedding,
     check_anti_spoofing,
     compute_cosine_similarity,
+    calculate_match_confidence,
+    SFACE_MATCH_THRESHOLD,
 )
 from app.services.presence_engine import presence_engine
 from app.services.email_service import send_class_attendance_report, send_occluded_exit_security_alert
@@ -432,19 +435,20 @@ def take_period_attendance(
     barcodes_scanned = 0
 
     # 1. Automatic Face Detection & Matching (Primary Biometric Path)
-    faces = detect_faces(frame)
+    faces, raw_faces = detect_faces_detailed(frame)
     h, w = frame.shape[:2]
 
-    for (x, y, fw, fh) in faces:
+    for idx, (x, y, fw, fh) in enumerate(faces):
+        face_raw = raw_faces[idx] if raw_faces is not None and len(raw_faces) > idx else None
         face_crop = frame[max(0, y):min(h, y+fh), max(0, x):min(w, x+fw)]
         if face_crop.size == 0:
             continue
 
         is_spoof, liveness, details = check_anti_spoofing(face_crop)
-        emb = extract_face_embedding(face_crop)
+        emb = extract_face_embedding(face_crop, full_image=frame, face_raw=face_raw)
 
         best_student = None
-        best_sim = 0.0
+        best_sim = -1.0
 
         for sid, emb_list in student_embeddings.items():
             for stored_vec in emb_list:
@@ -453,7 +457,8 @@ def take_period_attendance(
                     best_sim = sim
                     best_student = enrolled_student_map.get(sid)
 
-        is_matched = bool(best_student and best_sim >= 0.58 and not is_spoof)
+        is_matched = bool(best_student and best_sim >= SFACE_MATCH_THRESHOLD and not is_spoof)
+        conf_display = calculate_match_confidence(best_sim, SFACE_MATCH_THRESHOLD)
 
         face_item = {
             "bounding_box": [int(x), int(y), int(fw), int(fh)],
@@ -461,7 +466,7 @@ def take_period_attendance(
             "student_id": best_student.id if is_matched else None,
             "roll_number": best_student.student_id if is_matched else None,
             "full_name": best_student.user.full_name if is_matched else None,
-            "confidence": round(float(best_sim), 2),
+            "confidence": conf_display,
             "liveness_score": float(liveness),
             "spoof_detected": bool(is_spoof),
             "verification_method": "FACE_RECOGNITION"
@@ -475,7 +480,7 @@ def take_period_attendance(
                     "roll_number": best_student.student_id,
                     "student_name": best_student.user.full_name,
                     "full_name": best_student.user.full_name,
-                    "confidence": round(float(best_sim), 2),
+                    "confidence": conf_display,
                     "liveness_score": float(liveness),
                     "verification_method": "FACE_RECOGNITION",
                     "status": "PRESENT"
@@ -932,19 +937,20 @@ def take_period_attendance(
             barcode_count += 1
 
     # 2. Multi-face recognition in classroom frame
-    faces = detect_faces(image)
+    faces, raw_faces = detect_faces_detailed(image)
     if faces:
         all_embeddings = db.query(StudentFaceEmbedding).all()
         student_map = {s.id: s for s in db.query(Student).all()}
 
-        for (x, y, w, h) in faces:
+        for idx, (x, y, w, h) in enumerate(faces):
+            face_raw = raw_faces[idx] if raw_faces is not None and len(raw_faces) > idx else None
             face_crop = image[y:y+h, x:x+w]
             is_spoof, liveness, _ = check_anti_spoofing(face_crop)
             if is_spoof:
                 continue
 
-            emb = extract_face_embedding(face_crop)
-            best_sim = 0.0
+            emb = extract_face_embedding(face_crop, full_image=image, face_raw=face_raw)
+            best_sim = -1.0
             best_student_id = None
 
             for stored in all_embeddings:
@@ -957,8 +963,9 @@ def take_period_attendance(
                 except Exception:
                     pass
 
-            if best_student_id and best_sim >= 0.68:
-                recognized_student_ids.add((best_student_id, round(best_sim, 2), VerificationMethod.FACE_RECOGNITION.value))
+            if best_student_id and best_sim >= SFACE_MATCH_THRESHOLD:
+                conf = calculate_match_confidence(best_sim, SFACE_MATCH_THRESHOLD)
+                recognized_student_ids.add((best_student_id, conf, VerificationMethod.FACE_RECOGNITION.value))
 
     # Fetch all enrolled students for this subject or section
     enrollments = db.query(Enrollment).filter(Enrollment.subject_id == timetable.subject_id).all()

@@ -25,10 +25,13 @@ from app.schemas.biometrics import (
 from app.services.biometric_service import (
     decode_base64_image,
     detect_faces,
+    detect_faces_detailed,
     extract_face_embedding,
     compute_cosine_similarity,
+    calculate_match_confidence,
     check_anti_spoofing,
-    detect_and_decode_id_card
+    detect_and_decode_id_card,
+    SFACE_MATCH_THRESHOLD
 )
 
 router = APIRouter(prefix="/biometrics", tags=["Biometric Face Training & Anti-Spoofing"])
@@ -54,7 +57,7 @@ def enroll_student_face(
     if image is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid base64 image data")
 
-    faces = detect_faces(image)
+    faces, raw_faces = detect_faces_detailed(image)
     if not faces:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,8 +65,8 @@ def enroll_student_face(
         )
 
     # Use the primary/largest face in the frame
-    faces.sort(key=lambda f: f[2] * f[3], reverse=True)
     x, y, w, h = faces[0]
+    face_raw = raw_faces[0] if raw_faces is not None and len(raw_faces) > 0 else None
     face_crop = image[y:y+h, x:x+w]
 
     # Anti-spoofing check
@@ -74,8 +77,11 @@ def enroll_student_face(
             detail=f"Biometric Anti-Spoofing Validation Failed: {details}. Please present a live person."
         )
 
-    # Extract 128-d embedding
-    embedding = extract_face_embedding(face_crop)
+    # Extract 128-d deep embedding with landmark alignment
+    embedding = extract_face_embedding(face_crop, full_image=image, face_raw=face_raw)
+
+    # Clean up previous outdated embeddings for this student to ensure a fresh, high-precision profile
+    db.query(StudentFaceEmbedding).filter(StudentFaceEmbedding.student_id == student.id).delete()
 
     # Save to database
     face_emb = StudentFaceEmbedding(
@@ -89,7 +95,7 @@ def enroll_student_face(
 
     # Update Student record
     student.biometric_enrolled = True
-    student.biometric_face_count += 1
+    student.biometric_face_count = 1
     db.commit()
     db.refresh(face_emb)
 
@@ -249,20 +255,21 @@ def recognize_face_frame(
     all_detected_faces = []
 
     # 2. Check for faces in camera frame
-    faces = detect_faces(image)
+    faces, raw_faces = detect_faces_detailed(image)
     if faces:
         all_embeddings = db.query(StudentFaceEmbedding).all()
         student_map = {s.id: s for s in db.query(Student).all()}
 
-        for (x, y, w, h) in faces:
+        for idx, (x, y, w, h) in enumerate(faces):
+            face_raw = raw_faces[idx] if raw_faces is not None and len(raw_faces) > idx else None
             face_crop = image[y:y+h, x:x+w]
             is_spoof, liveness, details = check_anti_spoofing(face_crop)
             if is_spoof:
                 spoofs.append(details)
 
-            emb = extract_face_embedding(face_crop)
+            emb = extract_face_embedding(face_crop, full_image=image, face_raw=face_raw)
             best_student = None
-            best_sim = 0.0
+            best_sim = -1.0
 
             for stored in all_embeddings:
                 try:
@@ -274,7 +281,9 @@ def recognize_face_frame(
                 except Exception:
                     pass
 
-            is_matched = bool(best_student and best_sim >= 0.58)
+            is_matched = bool(best_student and best_sim >= SFACE_MATCH_THRESHOLD and not is_spoof)
+            display_confidence = calculate_match_confidence(best_sim, SFACE_MATCH_THRESHOLD)
+
             if is_matched:
                 # Automatic attendance recording when session or timetable is active
                 if effective_session_id and not is_spoof:
@@ -288,7 +297,7 @@ def recognize_face_frame(
                         if existing:
                             existing.status = AttendanceStatus.PRESENT.value
                             existing.verification_method = VerificationMethod.FACE_RECOGNITION.value
-                            existing.confidence_score = float(best_sim)
+                            existing.confidence_score = float(display_confidence)
                             existing.in_time = existing.in_time or now
                             existing.total_minutes_present = max(existing.total_minutes_present, 60.0)
                             existing.presence_ratio = 1.0
@@ -299,7 +308,7 @@ def recognize_face_frame(
                                 date=now.strftime("%Y-%m-%d"),
                                 status=AttendanceStatus.PRESENT.value,
                                 verification_method=VerificationMethod.FACE_RECOGNITION.value,
-                                confidence_score=float(best_sim),
+                                confidence_score=float(display_confidence),
                                 in_time=now,
                                 total_minutes_present=60.0,
                                 presence_ratio=1.0
@@ -316,7 +325,7 @@ def recognize_face_frame(
                             student_id=best_student.id,
                             roll_number=best_student.student_id,
                             full_name=best_student.user.full_name,
-                            confidence=round(best_sim, 2),
+                            confidence=display_confidence,
                             bounding_box=[int(x), int(y), int(w), int(h)],
                             liveness_score=liveness,
                             spoof_detected=is_spoof,
@@ -330,7 +339,7 @@ def recognize_face_frame(
                         student_id=best_student.id,
                         roll_number=best_student.student_id,
                         full_name=best_student.user.full_name,
-                        confidence=round(best_sim, 2),
+                        confidence=display_confidence,
                         liveness_score=liveness,
                         spoof_detected=is_spoof,
                         verification_method="FACE_RECOGNITION"
@@ -344,7 +353,7 @@ def recognize_face_frame(
                         student_id=None,
                         roll_number=None,
                         full_name=None,
-                        confidence=round(best_sim, 2) if best_student else 0.0,
+                        confidence=display_confidence if best_student else 0.0,
                         liveness_score=liveness,
                         spoof_detected=is_spoof,
                         verification_method="FACE_DETECTION"
