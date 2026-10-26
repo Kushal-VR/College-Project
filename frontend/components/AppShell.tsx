@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
+import { LogOut } from "lucide-react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, logout } = useAuth();
 
   const isLoginPage = pathname === "/login";
 
@@ -66,6 +67,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom-Left Floating Logout Button */}
+      {isAuthenticated && (
+        <div className="md:hidden fixed bottom-4 left-4 z-50">
+          <button
+            id="mobile-bottom-left-logout-btn"
+            onClick={logout}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white/95 backdrop-blur-md border border-rose-200 text-rose-600 shadow-lg text-xs font-semibold hover:bg-rose-50 transition active:scale-95 cursor-pointer"
+            title="Log Out"
+          >
+            <LogOut className="w-4 h-4 text-rose-500" />
+            <span>Log Out</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

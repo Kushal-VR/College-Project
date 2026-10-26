@@ -346,13 +346,13 @@ export default function TeacherPortalPage() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
         <button
           onClick={() => setActiveTab("class_teacher_ledger")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             activeTab === "class_teacher_ledger"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
           }`}
         >
           <Calendar className="w-4 h-4" />
@@ -361,10 +361,10 @@ export default function TeacherPortalPage() {
 
         <button
           onClick={() => setActiveTab("subject_matrix")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             activeTab === "subject_matrix"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
           }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -373,10 +373,10 @@ export default function TeacherPortalPage() {
 
         <button
           onClick={() => setActiveTab("weekly_timetable")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             activeTab === "weekly_timetable"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
           }`}
         >
           <Clock className="w-4 h-4" />
@@ -385,10 +385,10 @@ export default function TeacherPortalPage() {
 
         <button
           onClick={() => setActiveTab("faculty_sessions")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             activeTab === "faculty_sessions"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -397,10 +397,10 @@ export default function TeacherPortalPage() {
 
         <button
           onClick={() => setActiveTab("incidents")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             activeTab === "incidents"
-              ? "bg-rose-600 text-white shadow-lg shadow-rose-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-rose-600 text-white shadow-sm"
+              : "text-slate-600 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-700"
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
@@ -410,14 +410,14 @@ export default function TeacherPortalPage() {
 
       {/* Global Filter Bar for Ledger & Matrix */}
       {(activeTab === "class_teacher_ledger" || activeTab === "subject_matrix" || activeTab === "weekly_timetable") && (
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border border-slate-800 bg-slate-950/60 backdrop-blur">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border border-slate-200/90 bg-white shadow-xs">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400 font-medium">Section:</span>
+              <span className="text-xs text-slate-500 font-semibold">Section:</span>
               <select
                 value={selectedSection}
                 onChange={(e) => setSelectedSection(e.target.value)}
-                className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500 font-semibold"
+                className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
               >
                 <option value="B">Section B (Assigned Class)</option>
                 <option value="A">Section A</option>
@@ -427,26 +427,26 @@ export default function TeacherPortalPage() {
 
             {activeTab === "class_teacher_ledger" && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium">Date:</span>
+                <span className="text-xs text-slate-500 font-semibold">Date:</span>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-semibold font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
                 />
               </div>
             )}
           </div>
 
           {(activeTab === "class_teacher_ledger" || activeTab === "subject_matrix") && (
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+            <div className="relative min-w-[240px]">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search roll or student..."
+                placeholder="Search roll or student name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
           )}
@@ -455,58 +455,58 @@ export default function TeacherPortalPage() {
 
       {/* TAB 1: Class Teacher All-Periods Ledger */}
       {activeTab === "class_teacher_ledger" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl space-y-4">
-          <div className="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-white">
+                <h2 className="text-sm font-bold text-slate-900">
                   Section {selectedSection} Complete Daily Period Ledger
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-50 text-blue-700 border border-blue-200">
                   {selectedDate}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Full period-by-period matrix (Period 1 to 6) recorded automatically via In-Classroom AI Camera & Barcode Scanner.
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Classroom:</span>
-              <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono font-bold text-white">
+              <span className="text-xs text-slate-500 font-medium">Classroom:</span>
+              <span className="px-3 py-1 rounded-xl bg-white border border-slate-200 text-xs font-mono font-bold text-slate-800 shadow-2xs">
                 {dailyLedger?.classroom || "Room 302"}
               </span>
             </div>
           </div>
 
           {ledgerLoading ? (
-            <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RotateCw className="w-4 h-4 animate-spin text-blue-500" />
+            <div className="p-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+              <RotateCw className="w-4 h-4 animate-spin text-blue-600" />
               Loading Section {selectedSection} Ledger...
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wider border-b border-slate-200 font-bold">
                   <tr>
-                    <th className="px-5 py-3">#</th>
-                    <th className="px-5 py-3">Roll No</th>
-                    <th className="px-5 py-3">Student Name</th>
+                    <th className="px-5 py-3.5">#</th>
+                    <th className="px-5 py-3.5">Roll No</th>
+                    <th className="px-5 py-3.5">Student Name</th>
                     {dailyLedger?.period_headers.map((hdr) => (
-                      <th key={hdr.period} className="px-4 py-3 text-center border-l border-slate-800/80">
-                        <div className="font-bold text-white">P{hdr.period}</div>
-                        <div className="text-[9px] text-blue-400 lowercase">{hdr.time}</div>
-                        <div className="text-[9px] text-slate-400 font-mono">{hdr.subject_code}</div>
+                      <th key={hdr.period} className="px-4 py-3.5 text-center border-l border-slate-200/70">
+                        <div className="font-bold text-slate-900">P{hdr.period}</div>
+                        <div className="text-[9px] text-blue-600 font-semibold lowercase">{hdr.time}</div>
+                        <div className="text-[9px] text-slate-500 font-mono font-medium">{hdr.subject_code}</div>
                       </th>
                     ))}
-                    <th className="px-5 py-3 text-center border-l border-slate-800/80">Day Total</th>
+                    <th className="px-5 py-3.5 text-center border-l border-slate-200/70">Day Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody className="divide-y divide-slate-100">
                   {filteredDailyStudents.map((st, idx) => (
-                    <tr key={st.student_id} className="hover:bg-slate-900/40 transition">
-                      <td className="px-5 py-3.5 text-slate-500 font-mono">{idx + 1}</td>
-                      <td className="px-5 py-3.5 font-mono font-semibold text-white">{st.roll_number}</td>
-                      <td className="px-5 py-3.5 font-medium text-slate-200">{st.student_name}</td>
+                    <tr key={st.student_id} className="hover:bg-blue-50/30 transition">
+                      <td className="px-5 py-3.5 text-slate-400 font-mono">{idx + 1}</td>
+                      <td className="px-5 py-3.5 font-mono font-bold text-slate-800">{st.roll_number}</td>
+                      <td className="px-5 py-3.5 font-semibold text-slate-900">{st.student_name}</td>
 
                       {dailyLedger?.period_headers.map((hdr) => {
                         const status = st.periods[String(hdr.period)] || "NOT_RECORDED";
@@ -516,28 +516,28 @@ export default function TeacherPortalPage() {
                         return (
                           <td
                             key={hdr.period}
-                            className="px-4 py-3.5 text-center border-l border-slate-800/50"
+                            className="px-4 py-3.5 text-center border-l border-slate-100"
                           >
                             {isPresent ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                                <Check className="w-3 h-3" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <Check className="w-3 h-3 text-emerald-600" />
                                 PRES
                               </span>
                             ) : isAbsent ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40">
-                                <X className="w-3 h-3" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
+                                <X className="w-3 h-3 text-rose-600" />
                                 ABS
                               </span>
                             ) : (
-                              <span className="text-[10px] text-slate-600 font-mono">—</span>
+                              <span className="text-[10px] text-slate-300 font-mono font-bold">—</span>
                             )}
                           </td>
                         );
                       })}
 
-                      <td className="px-5 py-3.5 text-center border-l border-slate-800/80 font-mono font-bold">
-                        <span className="text-emerald-400">{st.total_attended_today}</span>
-                        <span className="text-slate-500"> / {dailyLedger?.period_headers.length || 6}</span>
+                      <td className="px-5 py-3.5 text-center border-l border-slate-100 font-mono font-bold">
+                        <span className="text-emerald-700 font-bold">{st.total_attended_today}</span>
+                        <span className="text-slate-400"> / {dailyLedger?.period_headers.length || 6}</span>
                       </td>
                     </tr>
                   ))}
@@ -546,7 +546,7 @@ export default function TeacherPortalPage() {
                     <tr>
                       <td
                         colSpan={(dailyLedger?.period_headers.length || 0) + 4}
-                        className="px-5 py-10 text-center text-slate-500"
+                        className="px-5 py-12 text-center text-slate-400 bg-slate-50/40 text-xs font-medium"
                       >
                         No attendance records for Section {selectedSection} on {selectedDate}.
                       </td>
@@ -561,80 +561,80 @@ export default function TeacherPortalPage() {
 
       {/* TAB 2: Overall Subject-Wise Matrix */}
       {activeTab === "subject_matrix" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl space-y-4">
-          <div className="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-white">
+                <h2 className="text-sm font-bold text-slate-900">
                   Section {selectedSection} Master Subject-Wise Attendance Matrix
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
                   Sem 7
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Full cumulative attendance percentage breakdown per student across all assigned courses with low-attendance warnings.
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 text-xs">
+              <div className="flex items-center gap-1.5 text-xs font-semibold">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-slate-400">≥ 75% Eligible</span>
+                <span className="text-slate-600">≥ 75% Eligible</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs">
+              <div className="flex items-center gap-1.5 text-xs font-semibold">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="text-slate-400">&lt; 75% Shortage</span>
+                <span className="text-slate-600">&lt; 75% Shortage</span>
               </div>
             </div>
           </div>
 
           {matrixLoading ? (
-            <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RotateCw className="w-4 h-4 animate-spin text-blue-500" />
+            <div className="p-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+              <RotateCw className="w-4 h-4 animate-spin text-blue-600" />
               Loading Subject Matrix...
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wider border-b border-slate-200 font-bold">
                   <tr>
-                    <th className="px-5 py-3">#</th>
-                    <th className="px-5 py-3">Roll No</th>
-                    <th className="px-5 py-3">Student Name</th>
+                    <th className="px-5 py-3.5">#</th>
+                    <th className="px-5 py-3.5">Roll No</th>
+                    <th className="px-5 py-3.5">Student Name</th>
                     {matrixSubjects.map((sub) => (
-                      <th key={sub.code} className="px-4 py-3 text-center border-l border-slate-800/80">
-                        <div className="font-bold text-white">{sub.code}</div>
-                        <div className="text-[9px] text-slate-400 max-w-[100px] truncate">{sub.name}</div>
+                      <th key={sub.code} className="px-4 py-3.5 text-center border-l border-slate-200/70">
+                        <div className="font-bold text-slate-900">{sub.code}</div>
+                        <div className="text-[9px] text-slate-500 max-w-[100px] truncate">{sub.name}</div>
                       </th>
                     ))}
-                    <th className="px-5 py-3 text-center border-l border-slate-800/80">Overall Classes</th>
-                    <th className="px-5 py-3 text-center border-l border-slate-800/80">Overall %</th>
-                    <th className="px-5 py-3 text-center border-l border-slate-800/80">Eligibility</th>
+                    <th className="px-5 py-3.5 text-center border-l border-slate-200/70">Overall Classes</th>
+                    <th className="px-5 py-3.5 text-center border-l border-slate-200/70">Overall %</th>
+                    <th className="px-5 py-3.5 text-center border-l border-slate-200/70">Eligibility</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody className="divide-y divide-slate-100">
                   {filteredMatrix.map((row, idx) => {
                     const isSafe = !row.has_shortage;
 
                     return (
-                      <tr key={row.student_id} className="hover:bg-slate-900/40 transition">
-                        <td className="px-5 py-3.5 text-slate-500 font-mono">{idx + 1}</td>
-                        <td className="px-5 py-3.5 font-mono font-semibold text-white">{row.roll_number}</td>
-                        <td className="px-5 py-3.5 font-medium text-slate-200">{row.student_name}</td>
+                      <tr key={row.student_id} className="hover:bg-blue-50/30 transition">
+                        <td className="px-5 py-3.5 text-slate-400 font-mono">{idx + 1}</td>
+                        <td className="px-5 py-3.5 font-mono font-bold text-slate-800">{row.roll_number}</td>
+                        <td className="px-5 py-3.5 font-semibold text-slate-900">{row.student_name}</td>
 
                         {row.subjects.map((sub) => {
                           const subSafe = sub.percentage >= 75.0;
                           return (
                             <td
                               key={sub.subject_code}
-                              className="px-4 py-3.5 text-center border-l border-slate-800/50"
+                              className="px-4 py-3.5 text-center border-l border-slate-100"
                             >
-                              <div className="font-mono font-bold text-white text-xs">
+                              <div className="font-mono font-bold text-slate-800 text-xs">
                                 {sub.classes_attended}/{sub.classes_held}
                               </div>
                               <div
                                 className={`text-[10px] font-mono font-bold ${
-                                  subSafe ? "text-emerald-400" : "text-rose-400"
+                                  subSafe ? "text-emerald-600" : "text-rose-600"
                                 }`}
                               >
                                 {sub.percentage}%
@@ -643,32 +643,30 @@ export default function TeacherPortalPage() {
                           );
                         })}
 
-                        <td className="px-5 py-3.5 text-center border-l border-slate-800/80 font-mono font-bold">
-                          <span className="text-emerald-400">{row.overall_attended}</span>
-                          <span className="text-slate-500"> / {row.overall_held}</span>
+                        <td className="px-5 py-3.5 text-center border-l border-slate-100 font-mono font-bold">
+                          <span className="text-emerald-600">{row.overall_attended}</span>
+                          <span className="text-slate-400"> / {row.overall_held}</span>
                         </td>
 
-                        <td className="px-5 py-3.5 text-center border-l border-slate-800/80 font-mono">
-                          <div className="flex items-center justify-center gap-2">
-                            <span
-                              className={`font-bold text-xs ${
-                                isSafe ? "text-emerald-400" : "text-rose-400"
-                              }`}
-                            >
-                              {row.overall_percentage}%
-                            </span>
-                          </div>
+                        <td className="px-5 py-3.5 text-center border-l border-slate-100 font-mono">
+                          <span
+                            className={`font-bold text-xs ${
+                              isSafe ? "text-emerald-700" : "text-rose-700"
+                            }`}
+                          >
+                            {row.overall_percentage}%
+                          </span>
                         </td>
 
-                        <td className="px-5 py-3.5 text-center border-l border-slate-800/80">
+                        <td className="px-5 py-3.5 text-center border-l border-slate-100">
                           {row.has_shortage ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                              <AlertTriangle className="w-3 h-3 text-rose-400" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
+                              <AlertTriangle className="w-3 h-3 text-rose-600" />
                               SHORTAGE
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                               ELIGIBLE
                             </span>
                           )}
@@ -679,7 +677,7 @@ export default function TeacherPortalPage() {
 
                   {filteredMatrix.length === 0 && (
                     <tr>
-                      <td colSpan={matrixSubjects.length + 6} className="px-5 py-10 text-center text-slate-500">
+                      <td colSpan={matrixSubjects.length + 6} className="px-5 py-12 text-center text-slate-400 bg-slate-50/40 text-xs">
                         No student matrix data found for Section {selectedSection}.
                       </td>
                     </tr>
@@ -693,25 +691,25 @@ export default function TeacherPortalPage() {
 
       {/* TAB 3: Weekly Timetable Grid */}
       {activeTab === "weekly_timetable" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl p-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs p-6 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-400" />
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-600" />
                 Section {selectedSection} Official Weekly Class Timetable
               </h2>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Period Schedule (Periods 1 to 6) configured for automatic AI Camera scanning and faculty attendance ledger.
               </p>
             </div>
-            <div className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-mono">
+            <div className="px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs font-mono font-semibold">
               6 Slots / Day (Mon - Sat)
             </div>
           </div>
 
           {timetableLoading ? (
-            <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RotateCw className="w-4 h-4 animate-spin text-blue-500" />
+            <div className="p-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+              <RotateCw className="w-4 h-4 animate-spin text-blue-600" />
               Loading Timetable Grid...
             </div>
           ) : (
@@ -722,11 +720,11 @@ export default function TeacherPortalPage() {
                 return (
                   <div
                     key={day}
-                    className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3"
+                    className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3"
                   >
-                    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                      <span className="font-bold text-white text-sm">{day}</span>
-                      <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                      <span className="font-bold text-slate-900 text-sm">{day}</span>
+                      <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-md">
                         {slots.length} Periods
                       </span>
                     </div>
@@ -735,30 +733,30 @@ export default function TeacherPortalPage() {
                       {slots.map((s) => (
                         <div
                           key={s.id}
-                          className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/80 hover:border-blue-500/40 transition flex items-center justify-between text-xs"
+                          className="p-3 rounded-xl bg-white border border-slate-200/80 hover:border-blue-400 hover:shadow-xs transition flex items-center justify-between text-xs"
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-blue-400 text-[11px]">
+                              <span className="font-mono font-bold text-blue-600 text-[11px] bg-blue-50 px-1.5 py-0.5 rounded">
                                 P{s.period_number}
                               </span>
-                              <span className="font-semibold text-white">{s.subject_name}</span>
+                              <span className="font-bold text-slate-900">{s.subject_name}</span>
                             </div>
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                            <div className="text-[10px] text-slate-500 font-mono mt-1">
                               {s.subject_code} • {s.faculty_name}
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono text-slate-300 text-[11px]">
+                            <div className="font-mono text-slate-700 font-semibold text-[11px]">
                               {s.start_time} - {s.end_time}
                             </div>
-                            <div className="text-[10px] text-slate-500">{s.classroom}</div>
+                            <div className="text-[10px] text-slate-400 font-medium">{s.classroom}</div>
                           </div>
                         </div>
                       ))}
 
                       {slots.length === 0 && (
-                        <div className="text-center py-6 text-slate-500 text-xs">No periods scheduled.</div>
+                        <div className="text-center py-6 text-slate-400 text-xs italic">No periods scheduled.</div>
                       )}
                     </div>
                   </div>
@@ -771,46 +769,46 @@ export default function TeacherPortalPage() {
 
       {/* TAB 4: Subject Faculty Course Sessions & Email */}
       {activeTab === "faculty_sessions" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl">
-          <div className="p-5 border-b border-slate-800">
-            <h2 className="text-sm font-bold text-white">Day-by-Day Course Sessions & Dispatch</h2>
-            <p className="text-xs text-slate-400 mt-1">
+        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-sm font-bold text-slate-900">Day-by-Day Course Sessions & Dispatch</h2>
+            <p className="text-xs text-slate-500 mt-1">
               Browse every class session by date with instant option to email official attendance report via SMTP.
             </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wider border-b border-slate-200 font-bold">
                 <tr>
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Time Slot</th>
-                  <th className="px-5 py-3">Classroom</th>
-                  <th className="px-5 py-3">Present</th>
-                  <th className="px-5 py-3">Absent</th>
-                  <th className="px-5 py-3">Left Early</th>
-                  <th className="px-5 py-3">Rate</th>
-                  <th className="px-5 py-3">SMTP Email</th>
-                  <th className="px-5 py-3">Action</th>
+                  <th className="px-5 py-3.5">Date</th>
+                  <th className="px-5 py-3.5">Time Slot</th>
+                  <th className="px-5 py-3.5">Classroom</th>
+                  <th className="px-5 py-3.5">Present</th>
+                  <th className="px-5 py-3.5">Absent</th>
+                  <th className="px-5 py-3.5">Left Early</th>
+                  <th className="px-5 py-3.5">Rate</th>
+                  <th className="px-5 py-3.5">SMTP Email</th>
+                  <th className="px-5 py-3.5">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-slate-100">
                 {recentSessions.map((sess) => (
-                  <tr key={sess.session_id} className="hover:bg-slate-900/40 transition">
-                    <td className="px-5 py-3.5 font-mono font-bold text-white">{sess.date}</td>
-                    <td className="px-5 py-3.5 font-mono text-slate-300">{sess.time_slot}</td>
-                    <td className="px-5 py-3.5 text-slate-400">{sess.classroom}</td>
-                    <td className="px-5 py-3.5 font-mono text-emerald-400 font-bold">{sess.present_count}</td>
-                    <td className="px-5 py-3.5 font-mono text-rose-400 font-bold">{sess.absent_count}</td>
-                    <td className="px-5 py-3.5 font-mono text-amber-400">{sess.left_early_count}</td>
-                    <td className="px-5 py-3.5 font-mono text-blue-400 font-bold">{sess.attendance_rate}%</td>
+                  <tr key={sess.session_id} className="hover:bg-blue-50/30 transition">
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">{sess.date}</td>
+                    <td className="px-5 py-3.5 font-mono text-slate-600">{sess.time_slot}</td>
+                    <td className="px-5 py-3.5 text-slate-600">{sess.classroom}</td>
+                    <td className="px-5 py-3.5 font-mono text-emerald-600 font-bold">{sess.present_count}</td>
+                    <td className="px-5 py-3.5 font-mono text-rose-600 font-bold">{sess.absent_count}</td>
+                    <td className="px-5 py-3.5 font-mono text-amber-600 font-bold">{sess.left_early_count}</td>
+                    <td className="px-5 py-3.5 font-mono text-blue-600 font-bold">{sess.attendance_rate}%</td>
                     <td className="px-5 py-3.5">
                       {sess.email_sent ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           SENT
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-500">
                           NOT SENT
                         </span>
                       )}
@@ -818,9 +816,9 @@ export default function TeacherPortalPage() {
                     <td className="px-5 py-3.5">
                       <button
                         onClick={() => handleSendEmailReport(sess.session_id)}
-                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 font-medium transition text-[11px]"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold transition text-[11px] cursor-pointer"
                       >
-                        <Mail className="w-3 h-3" />
+                        <Mail className="w-3.5 h-3.5" />
                         Send Report via Email
                       </button>
                     </td>
@@ -829,7 +827,7 @@ export default function TeacherPortalPage() {
 
                 {recentSessions.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-5 py-8 text-center text-slate-500">
+                    <td colSpan={9} className="px-5 py-10 text-center text-slate-400 bg-slate-50/40">
                       No completed class sessions recorded yet.
                     </td>
                   </tr>
@@ -842,13 +840,13 @@ export default function TeacherPortalPage() {
 
       {/* TAB 5: Security & Covered Face Incidents */}
       {activeTab === "incidents" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 space-y-4 shadow-xs">
           <div>
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-rose-600" />
               Covered Face &amp; Occluded Departure Incidents
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Photographic proofs captured when students exited the classroom with concealed faces (hands, hoods, or masks).
             </p>
           </div>
@@ -857,27 +855,27 @@ export default function TeacherPortalPage() {
             {incidents.map((inc) => (
               <div
                 key={inc.id}
-                className="rounded-xl border border-rose-500/30 bg-rose-950/10 p-4 space-y-3"
+                className="rounded-2xl border border-rose-200 bg-rose-50/40 p-4 space-y-3"
               >
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-mono text-rose-400 font-bold uppercase">{inc.event_type}</span>
-                  <span className="text-slate-400 text-[11px] font-mono">
+                  <span className="font-mono text-rose-700 font-bold uppercase">{inc.event_type}</span>
+                  <span className="text-slate-500 text-[11px] font-mono">
                     {new Date(inc.timestamp).toLocaleString()}
                   </span>
                 </div>
 
-                <div className="text-xs text-slate-300">
+                <div className="text-xs text-slate-700 space-y-0.5">
                   <div>
                     Location: <strong>{inc.classroom}</strong> ({inc.camera_name})
                   </div>
                   <div>
-                    Suspected Student: <strong className="text-rose-300">{inc.student_name}</strong> ({inc.roll_number})
+                    Suspected Student: <strong className="text-rose-700">{inc.student_name}</strong> ({inc.roll_number})
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">{inc.details}</p>
+                  <p className="text-[11px] text-slate-500 mt-1">{inc.details}</p>
                 </div>
 
                 {inc.photo_proof_path && (
-                  <div className="rounded-lg overflow-hidden border border-slate-800 bg-black aspect-video flex items-center justify-center">
+                  <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video flex items-center justify-center">
                     <img src={inc.photo_proof_path} alt="Proof" className="w-full h-full object-cover" />
                   </div>
                 )}
@@ -885,9 +883,10 @@ export default function TeacherPortalPage() {
             ))}
 
             {incidents.length === 0 && (
-              <div className="col-span-full text-center py-10 text-slate-500">
-                <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-emerald-500/40" />
-                <p className="text-xs">Zero security incidents or covered-face exits recorded.</p>
+              <div className="col-span-full text-center py-12 text-slate-400 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+                <p className="text-xs font-semibold text-slate-700">Zero security incidents or covered-face exits recorded.</p>
+                <p className="text-[11px] text-slate-400">Classroom attendance monitoring running normally.</p>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,9 +13,11 @@ import {
   Video,
   ScanFace,
   ChevronDown,
-  Info,
-  Layers,
+  LogOut,
+  Shield,
+  School,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface NavItem {
   name: string;
@@ -33,16 +35,29 @@ const mainNavItems: NavItem[] = [
   { name: "Teacher Daily Matrix", href: "/teacher", count: 6, icon: GraduationCap },
   { name: "Face Biometrics & ID", href: "/enrollment", count: 2, icon: ScanFace },
   { name: "Student Directory", href: "/students", count: 3, icon: Users },
-  { name: "Faculty Staff", href: "/faculty", count: 1, icon: Users },
+  { name: "My Classroom", href: "/classroom", count: "CLASS", icon: School, badgeType: "highlight" },
   { name: "Subject Catalog", href: "/subjects", count: 1, icon: BookOpen },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, logout, isAuthenticated } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
-    <aside className="w-64 shrink-0 border-r border-slate-100 bg-white hidden md:flex flex-col justify-between p-4 shadow-[1px_0_4px_0_rgba(0,0,0,0.01)]">
-      <div className="space-y-6">
+    <aside className="w-64 shrink-0 border-r border-slate-100 bg-white hidden md:flex flex-col justify-between p-4 shadow-[1px_0_4px_0_rgba(0,0,0,0.01)] sticky top-[61px] h-[calc(100vh-61px)]">
+      {/* Top navigation area */}
+      <div className="space-y-6 overflow-y-auto pr-1">
         <div>
           <div className="px-3 mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Navigation
@@ -93,20 +108,41 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Guided Instruction Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
-          <Info className="w-3.5 h-3.5 text-blue-600" />
-          <span>Instructed Workflow</span>
+      {/* Bottom Section: User Info & Bottom-Left Logout Button */}
+      {isAuthenticated && (
+        <div className="pt-3 border-t border-slate-100 mt-2">
+          {/* User Card + Working Logout Button */}
+          <div className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
+                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : "A"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-slate-800 truncate leading-tight">
+                  {user?.full_name || "Administrator"}
+                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-100 text-blue-700 uppercase tracking-wide">
+                    <Shield className="w-2.5 h-2.5" />
+                    {user?.role || "ADMIN"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              id="sidebar-logout-button"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              title="Sign out of your account"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 bg-white hover:bg-rose-50 active:bg-rose-100 border border-rose-200 hover:border-rose-300 rounded-lg shadow-xs transition-all group cursor-pointer disabled:opacity-50"
+            >
+              <LogOut className={`w-3.5 h-3.5 text-rose-500 transition-transform group-hover:-translate-x-0.5 ${isLoggingOut ? "animate-spin" : ""}`} />
+              <span>{isLoggingOut ? "Logging out..." : "Log Out"}</span>
+            </button>
+          </div>
         </div>
-        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
-          1. Select class in Timetable
-          <br />
-          2. Toggle Live CCTV Auto-Attendance
-          <br />
-          3. Face matches log directly to Supabase
-        </p>
-      </div>
+      )}
     </aside>
   );
 }

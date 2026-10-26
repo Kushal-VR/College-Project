@@ -160,19 +160,31 @@ def seed_default_users(db: Session):
         (5, "14:00", "15:00"),
         (6, "15:00", "16:00"),
     ]
+    all_subjects = db.query(Subject).filter(Subject.semester == 6).all()
+    sub_map = {s.code: s for s in all_subjects}
+    period_sub_codes = {
+        1: "CS301",
+        2: "CS302",
+        3: "CS303",
+        4: "CS304",
+        5: "CS301",
+        6: "CS302",
+    }
     for section_name in ["A", "B"]:
         for day in days:
             for p_num, s_time, e_time in periods:
                 existing_slot = db.query(Timetable).filter(
-                    Timetable.subject_id == subj.id,
                     Timetable.day_of_week == day,
                     Timetable.period_number == p_num,
                     Timetable.section == section_name
                 ).first()
                 if not existing_slot:
+                    target_code = period_sub_codes.get(p_num, "CS301")
+                    target_sub = sub_map.get(target_code, subj)
+                    target_faculty_id = target_sub.faculty_id if target_sub.faculty_id else faculty_profile.id
                     new_slot = Timetable(
-                        subject_id=subj.id,
-                        faculty_id=faculty_profile.id,
+                        subject_id=target_sub.id,
+                        faculty_id=target_faculty_id,
                         camera_id=cam1.id if cam1 else None,
                         day_of_week=day,
                         period_number=p_num,
