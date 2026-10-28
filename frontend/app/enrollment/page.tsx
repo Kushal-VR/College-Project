@@ -131,9 +131,12 @@ export default function EnrollmentPage() {
     } catch (err: unknown) {
       console.error("Camera access error:", err);
       const errName = err instanceof Error ? err.name : "";
+      const errMsg = err instanceof Error ? err.message : String(err);
       let detail = "Could not access webcam. Please check browser camera permissions or upload an image.";
       if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
         detail = "Camera permission was denied in your browser. Please click the lock/camera icon in your URL bar and select 'Allow'.";
+      } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError" || errMsg.includes("Requested device not found")) {
+        detail = "Requested device not found (Code 45). On Lenovo laptops, please open the physical webcam privacy slider (above the screen), press Fn+F8, or toggle OFF Camera Privacy Mode in Lenovo Vantage.";
       } else if (errName === "NotReadableError" || errName === "TrackStartError") {
         detail = "Camera hardware is locked by another program or Lenovo Vantage Privacy Mode. Press Fn+F8 or check Windows Camera settings, or upload a photo directly.";
       } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError") {

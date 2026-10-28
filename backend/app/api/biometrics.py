@@ -262,6 +262,15 @@ def recognize_face_frame(
 
         for idx, (x, y, w, h) in enumerate(faces):
             face_raw = raw_faces[idx] if raw_faces is not None and len(raw_faces) > idx else None
+            face_landmarks = None
+            if face_raw is not None and len(face_raw) >= 14:
+                face_landmarks = [
+                    [float(face_raw[4]), float(face_raw[5])],   # Right eye
+                    [float(face_raw[6]), float(face_raw[7])],   # Left eye
+                    [float(face_raw[8]), float(face_raw[9])],   # Nose tip
+                    [float(face_raw[10]), float(face_raw[11])], # Right mouth corner
+                    [float(face_raw[12]), float(face_raw[13])], # Left mouth corner
+                ]
             face_crop = image[y:y+h, x:x+w]
             is_spoof, liveness, details = check_anti_spoofing(face_crop)
             if is_spoof:
@@ -342,7 +351,8 @@ def recognize_face_frame(
                         confidence=display_confidence,
                         liveness_score=liveness,
                         spoof_detected=is_spoof,
-                        verification_method="FACE_RECOGNITION"
+                        verification_method="FACE_RECOGNITION",
+                        landmarks=face_landmarks
                     )
                 )
             else:
@@ -356,7 +366,8 @@ def recognize_face_frame(
                         confidence=display_confidence if best_student else 0.0,
                         liveness_score=liveness,
                         spoof_detected=is_spoof,
-                        verification_method="FACE_DETECTION"
+                        verification_method="FACE_DETECTION",
+                        landmarks=face_landmarks
                     )
                 )
 

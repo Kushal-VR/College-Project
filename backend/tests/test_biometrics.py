@@ -61,7 +61,7 @@ def test_student_face_embedding_database_persistence(db):
     student.biometric_face_count += 1
     db.commit()
 
-    loaded = db.query(StudentFaceEmbedding).filter(StudentFaceEmbedding.student_id == student.id).first()
+    loaded = db.query(StudentFaceEmbedding).filter(StudentFaceEmbedding.id == emb_rec.id).first()
     assert loaded is not None
     assert loaded.quality_score == 0.92
     assert student.biometric_enrolled is True
