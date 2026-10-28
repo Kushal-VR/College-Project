@@ -43,6 +43,7 @@ class DetectedFaceItem(BaseModel):
     liveness_score: float = 0.0
     spoof_detected: bool = False
     verification_method: str = "FACE_RECOGNITION"
+    landmarks: Optional[List[List[float]]] = None  # [[x, y], ...]
 
 class IDCardScanRequest(BaseModel):
     image_base64: Optional[str] = None

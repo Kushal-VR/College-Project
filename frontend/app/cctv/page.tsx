@@ -69,6 +69,7 @@ export interface DetectedFaceItem {
   liveness_score: number;
   spoof_detected: boolean;
   verification_method?: string;
+  landmarks?: number[][] | null;
 }
 
 export interface AcceptancePreviewData {
@@ -109,6 +110,276 @@ interface TimetableSlotItem {
   day_of_week?: string;
 }
 
+/**
+ * Draws a 3D-style Biometric Mesh / Constellation of sticks & glowing nodes.
+ * - When matched: Vibrant glowing green sticks & glowing green dots.
+ * - When unmatched: Vibrant glowing red sticks & glowing red dots.
+ * - When spoof detected: Alert amber/red sticks.
+ */
+export function drawBiometricFaceMesh(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  isRecognized: boolean,
+  isSpoof: boolean = false,
+  landmarks?: number[][] | null,
+  labelInfo?: { name?: string; roll?: string; confidence?: number }
+) {
+  const primaryColor = isSpoof
+    ? "#f59e0b"
+    : isRecognized
+    ? "#10b981"
+    : "#ef4444";
+  const glowColor = isSpoof
+    ? "rgba(245, 158, 11, 0.55)"
+    : isRecognized
+    ? "rgba(16, 185, 129, 0.55)"
+    : "rgba(239, 68, 68, 0.55)";
+  const stickColor = isSpoof
+    ? "rgba(245, 158, 11, 0.9)"
+    : isRecognized
+    ? "rgba(52, 211, 153, 0.92)"
+    : "rgba(248, 113, 113, 0.92)";
+  const dotColor = isSpoof
+    ? "#fbbf24"
+    : isRecognized
+    ? "#6ee7b7"
+    : "#fca5a5";
+
+  // Center & key proportional anchor points
+  const cx = x + w * 0.5;
+
+  let reX = cx + w * 0.22, reY = y + h * 0.38; // Right eye
+  let leX = cx - w * 0.22, leY = y + h * 0.38; // Left eye
+  let ntX = cx, ntY = y + h * 0.58;             // Nose tip
+  let rcX = cx + w * 0.20, rcY = y + h * 0.74; // Right mouth
+  let lcX = cx - w * 0.20, lcY = y + h * 0.74; // Left mouth
+
+  // If real YuNet landmarks exist:
+  if (landmarks && landmarks.length >= 5) {
+    reX = landmarks[0][0]; reY = landmarks[0][1];
+    leX = landmarks[1][0]; leY = landmarks[1][1];
+    ntX = landmarks[2][0]; ntY = landmarks[2][1];
+    rcX = landmarks[3][0]; rcY = landmarks[3][1];
+    lcX = landmarks[4][0]; lcY = landmarks[4][1];
+  }
+
+  // Construct biometric constellation nodes based on facial anatomy:
+  const pForeheadTop = { x: cx, y: y + h * 0.08 };
+  const pForeheadL = { x: cx - w * 0.26, y: y + h * 0.16 };
+  const pForeheadR = { x: cx + w * 0.26, y: y + h * 0.16 };
+  const pTempleL = { x: x + w * 0.08, y: y + h * 0.28 };
+  const pTempleR = { x: x + w * 0.92, y: y + h * 0.28 };
+
+  const pBrowInnerL = { x: cx - w * 0.10, y: y + h * 0.30 };
+  const pBrowInnerR = { x: cx + w * 0.10, y: y + h * 0.30 };
+  const pBrowMidL = { x: cx - w * 0.26, y: y + h * 0.28 };
+  const pBrowMidR = { x: cx + w * 0.26, y: y + h * 0.28 };
+
+  const pNoseBridgeTop = { x: cx, y: y + h * 0.32 };
+  const pNoseBridgeMid = { x: cx, y: (pNoseBridgeTop.y + ntY) * 0.5 };
+  const pNoseTip = { x: ntX, y: ntY };
+  const pNostrilL = { x: cx - w * 0.13, y: ntY + h * 0.02 };
+  const pNostrilR = { x: cx + w * 0.13, y: ntY + h * 0.02 };
+
+  const pEyeL = { x: leX, y: leY };
+  const pEyeR = { x: reX, y: reY };
+  const pEyeInnerL = { x: cx - w * 0.09, y: leY };
+  const pEyeOuterL = { x: x + w * 0.10, y: leY };
+  const pEyeInnerR = { x: cx + w * 0.09, y: reY };
+  const pEyeOuterR = { x: x + w * 0.90, y: reY };
+
+  const pCheekL = { x: x + w * 0.06, y: y + h * 0.56 };
+  const pCheekR = { x: x + w * 0.94, y: y + h * 0.56 };
+
+  const pMouthCornerL = { x: lcX, y: lcY };
+  const pMouthCornerR = { x: rcX, y: rcY };
+  const pUpperLipTop = { x: cx, y: y + h * 0.68 };
+  const pUpperLipL = { x: cx - w * 0.10, y: y + h * 0.69 };
+  const pUpperLipR = { x: cx + w * 0.10, y: y + h * 0.69 };
+  const pLowerLipBottom = { x: cx, y: y + h * 0.80 };
+
+  const pJawL = { x: x + w * 0.14, y: y + h * 0.86 };
+  const pJawR = { x: x + w * 0.86, y: y + h * 0.86 };
+  const pChin = { x: cx, y: y + h * 0.96 };
+
+  // Collect all constellation "sticks" (pairs of connected points)
+  const sticks: [{ x: number; y: number }, { x: number; y: number }][] = [
+    // Forehead facet
+    [pForeheadTop, pForeheadL],
+    [pForeheadTop, pForeheadR],
+    [pForeheadTop, pNoseBridgeTop],
+    [pForeheadL, pForeheadR],
+    [pForeheadL, pTempleL],
+    [pForeheadR, pTempleR],
+    [pForeheadL, pBrowMidL],
+    [pForeheadR, pBrowMidR],
+
+    // Eyebrows & Glabella
+    [pBrowMidL, pBrowInnerL],
+    [pBrowInnerL, pNoseBridgeTop],
+    [pBrowInnerR, pNoseBridgeTop],
+    [pBrowInnerR, pBrowMidR],
+    [pTempleL, pBrowMidL],
+    [pTempleR, pBrowMidR],
+
+    // Eyes to Bridge and Temples
+    [pBrowInnerL, pEyeInnerL],
+    [pBrowInnerR, pEyeInnerR],
+    [pBrowMidL, pEyeL],
+    [pBrowMidR, pEyeR],
+    [pTempleL, pEyeOuterL],
+    [pTempleR, pEyeOuterR],
+    [pEyeOuterL, pEyeL],
+    [pEyeL, pEyeInnerL],
+    [pEyeInnerL, pNoseBridgeTop],
+    [pEyeInnerR, pNoseBridgeTop],
+    [pEyeInnerR, pEyeR],
+    [pEyeR, pEyeOuterR],
+
+    // Nose facet
+    [pNoseBridgeTop, pNoseBridgeMid],
+    [pNoseBridgeMid, pNoseTip],
+    [pNoseBridgeMid, pNostrilL],
+    [pNoseBridgeMid, pNostrilR],
+    [pNostrilL, pNoseTip],
+    [pNoseTip, pNostrilR],
+    [pEyeInnerL, pNoseBridgeMid],
+    [pEyeInnerR, pNoseBridgeMid],
+
+    // Cheeks & Midface
+    [pEyeOuterL, pCheekL],
+    [pEyeOuterR, pCheekR],
+    [pEyeL, pCheekL],
+    [pEyeR, pCheekR],
+    [pNostrilL, pCheekL],
+    [pNostrilR, pCheekR],
+    [pNostrilL, pMouthCornerL],
+    [pNostrilR, pMouthCornerR],
+
+    // Mouth facet
+    [pNoseTip, pUpperLipTop],
+    [pUpperLipTop, pUpperLipL],
+    [pUpperLipTop, pUpperLipR],
+    [pUpperLipL, pMouthCornerL],
+    [pUpperLipR, pMouthCornerR],
+    [pMouthCornerL, pLowerLipBottom],
+    [pMouthCornerR, pLowerLipBottom],
+    [pUpperLipTop, pLowerLipBottom],
+
+    // Jawline & Chin facet
+    [pCheekL, pJawL],
+    [pCheekR, pJawR],
+    [pMouthCornerL, pJawL],
+    [pMouthCornerR, pJawR],
+    [pLowerLipBottom, pChin],
+    [pJawL, pChin],
+    [pJawR, pChin],
+  ];
+
+  const nodes = [
+    pForeheadTop, pForeheadL, pForeheadR, pTempleL, pTempleR,
+    pBrowMidL, pBrowInnerL, pBrowInnerR, pBrowMidR,
+    pNoseBridgeTop, pNoseBridgeMid, pNoseTip, pNostrilL, pNostrilR,
+    pEyeOuterL, pEyeL, pEyeInnerL, pEyeInnerR, pEyeR, pEyeOuterR,
+    pCheekL, pCheekR,
+    pUpperLipTop, pUpperLipL, pUpperLipR, pMouthCornerL, pMouthCornerR, pLowerLipBottom,
+    pJawL, pJawR, pChin
+  ];
+
+  ctx.save();
+
+  // 1. Draw glowing biometric face mesh sticks
+  ctx.shadowColor = glowColor;
+  ctx.shadowBlur = 8;
+  ctx.strokeStyle = stickColor;
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  for (const [p1, p2] of sticks) {
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+  }
+  ctx.stroke();
+
+  // 2. Draw glowing constellation nodes
+  for (const pt of nodes) {
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = dotColor;
+    ctx.shadowColor = primaryColor;
+    ctx.shadowBlur = 10;
+    ctx.fill();
+
+    // inner white core
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 1.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+  }
+
+  // 3. Cybernetic Bounding Corner Reticles
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = primaryColor;
+  ctx.lineWidth = 2.5;
+  const bLen = Math.min(22, w * 0.25);
+  ctx.beginPath();
+  // Top Left
+  ctx.moveTo(x, y + bLen); ctx.lineTo(x, y); ctx.lineTo(x + bLen, y);
+  // Top Right
+  ctx.moveTo(x + w - bLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + bLen);
+  // Bottom Left
+  ctx.moveTo(x, y + h - bLen); ctx.lineTo(x, y + h); ctx.lineTo(x + bLen, y + h);
+  // Bottom Right
+  ctx.moveTo(x + w - bLen, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - bLen);
+  ctx.stroke();
+
+  // 4. Status HUD Header & Tag
+  if (isSpoof) {
+    ctx.fillStyle = "rgba(239, 68, 68, 0.95)";
+    ctx.fillRect(x, Math.max(0, y - 30), Math.max(190, w), 28);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillText("⚠ SPOOF / LIVENESS ALERT", x + 8, Math.max(0, y - 30) + 18);
+  } else if (isRecognized) {
+    const studentLabel = labelInfo?.name
+      ? `${labelInfo.name} (${labelInfo.roll || ""}) • ${((labelInfo.confidence || 0.88) * 100).toFixed(0)}% MATCH`
+      : "MATCHED STUDENT • 92% CONFIDENCE";
+    ctx.font = "bold 12px sans-serif";
+    const tWidth = ctx.measureText(studentLabel).width;
+    ctx.fillStyle = "rgba(16, 185, 129, 0.95)";
+    ctx.fillRect(x, Math.max(0, y - 32), Math.max(tWidth + 20, w), 30);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(studentLabel, x + 8, Math.max(0, y - 32) + 19);
+
+    // Green Verified Footer
+    ctx.fillStyle = "rgba(2, 132, 199, 0.9)";
+    ctx.fillRect(x, y + h + 6, 160, 22);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 10px monospace";
+    ctx.fillText("✓ BIOMETRIC MATCHED", x + 8, y + h + 21);
+  } else {
+    // Red UNMATCHED / UNKNOWN FACE
+    const unmatchLabel = "✕ UNMATCHED FACE / UNKNOWN";
+    ctx.font = "bold 11px sans-serif";
+    const tWidth = ctx.measureText(unmatchLabel).width;
+    ctx.fillStyle = "rgba(239, 68, 68, 0.95)";
+    ctx.fillRect(x, Math.max(0, y - 30), Math.max(tWidth + 20, w), 28);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(unmatchLabel, x + 8, Math.max(0, y - 30) + 18);
+
+    // Red Warning Footer
+    ctx.fillStyle = "rgba(185, 28, 28, 0.9)";
+    ctx.fillRect(x, y + h + 6, 150, 22);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 10px monospace";
+    ctx.fillText("✕ NO PROFILE FOUND", x + 8, y + h + 21);
+  }
+
+  ctx.restore();
+}
+
 export default function CCTVPage() {
   const { token } = useAuth();
   const [cameras, setCameras] = useState<CameraItem[]>([]);
@@ -129,6 +400,7 @@ export default function CCTVPage() {
     message: string;
     suggestions: string[];
   } | null>(null);
+  const [simulatedMatchStatus, setSimulatedMatchStatus] = useState<"MATCHED" | "UNMATCHED">("MATCHED");
 
   // Video & Canvas Refs (Permanently mounted to prevent null ref bugs)
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -352,6 +624,24 @@ export default function CCTVPage() {
         const errMsg = err instanceof Error ? err.message : String(err);
 
         if (
+          errName === "NotFoundError" ||
+          errMsg.includes("Requested device not found") ||
+          errMsg.includes("DevicesNotFoundError")
+        ) {
+          setCameraLockError({
+            isLocked: true,
+            errorType: "Camera Disconnected / Privacy Switch ON",
+            message:
+              "Requested device not found. Windows reports the webcam is disconnected at the hardware level (Code 45 CM_PROB_PHANTOM). On Lenovo laptops, this happens when the privacy shutter is closed or Lenovo Vantage Camera Privacy Mode is turned ON.",
+            suggestions: [
+              "Lenovo Physical Shutter: Check the top bezel above your screen. Slide the small privacy shutter open (an orange/red dot means the camera is closed/off).",
+              "Lenovo E-Shutter Switch: Check the right side edge of your laptop body for a small electronic camera toggle switch.",
+              "Lenovo Vantage App: Open Lenovo Vantage (search in Start menu) -> Display & Camera -> Turn OFF 'Camera Privacy Mode'.",
+              "Keyboard Hotkey: Press F8 or Fn+F8 or Fn+F10 on your keyboard (the key with a camera icon crossed out).",
+              "Windows Privacy: Windows Settings -> Privacy & Security -> Camera -> Turn ON 'Camera access' and 'Let desktop apps access your camera'.",
+            ],
+          });
+        } else if (
           errName === "NotReadableError" ||
           errName === "TrackStartError" ||
           errMsg.includes("Could not start video source")
@@ -475,49 +765,26 @@ export default function CCTVPage() {
         ctx.fillStyle = grad;
         ctx.fillRect(0, scanY, canvas.width, 3);
 
-        // AI Reticle over Student Face
+        // 3D Biometric Face Mesh Reticle (Sticks in Green if Matched, in Red if Unmatched)
         const fx = canvas.width / 2 - 110;
         const fy = 290;
         const fw = 220;
-        const fh = 190;
-        ctx.textAlign = "left";
-        ctx.strokeStyle = "#10b981";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(fx, fy, fw, fh);
+        const fh = 200;
 
-        // Corner brackets
-        const cornerLen = 28;
-        ctx.strokeStyle = "#38bdf8";
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(fx, fy + cornerLen);
-        ctx.lineTo(fx, fy);
-        ctx.lineTo(fx + cornerLen, fy);
-        ctx.moveTo(fx + fw - cornerLen, fy);
-        ctx.lineTo(fx + fw, fy);
-        ctx.lineTo(fx + fw, fy + cornerLen);
-        ctx.moveTo(fx, fy + fh - cornerLen);
-        ctx.lineTo(fx, fy + fh);
-        ctx.lineTo(fx + cornerLen, fy + fh);
-        ctx.moveTo(fx + fw - cornerLen, fy + fh);
-        ctx.lineTo(fx + fw, fy + fh);
-        ctx.lineTo(fx + fw, fy + fh - cornerLen);
-        ctx.stroke();
-
-        // Student Match Label
-        const label = "Kushal Student (CS-2024-001) • 88% MATCH";
-        ctx.fillStyle = "rgba(16, 185, 129, 0.95)";
-        ctx.fillRect(fx, fy - 32, 330, 30);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 13px sans-serif";
-        ctx.fillText(label, fx + 10, fy - 12);
-
-        // Verified tag
-        ctx.fillStyle = "rgba(2, 132, 199, 0.9)";
-        ctx.fillRect(fx, fy + fh + 8, 175, 24);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 11px monospace";
-        ctx.fillText("✓ VERIFIED STUDENT", fx + 8, fy + fh + 24);
+        const isMatch = simulatedMatchStatus === "MATCHED";
+        drawBiometricFaceMesh(
+          ctx,
+          fx,
+          fy,
+          fw,
+          fh,
+          isMatch,
+          false,
+          null,
+          isMatch
+            ? { name: "Kushal Student", roll: "CS-2024-001", confidence: 0.94 }
+            : undefined
+        );
       };
 
       animInterval = setInterval(drawVirtualFrame, 50);
@@ -526,7 +793,7 @@ export default function CCTVPage() {
     return () => {
       if (animInterval) clearInterval(animInterval);
     };
-  }, [useVirtualCam]);
+  }, [useVirtualCam, simulatedMatchStatus]);
 
   // Active slot object
   const currentSlot =
@@ -709,81 +976,46 @@ export default function CCTVPage() {
               37
             );
 
-            // Draw bounding boxes & reticles
+            // Draw 3D Biometric Face Mesh Reticles (Sticks in Green if Matched, in Red if Unmatched)
             if (allFaces.length > 0) {
               allFaces.forEach((face, idx) => {
                 const [x, y, w, h] = face.bounding_box;
                 if (!w || !h) return;
 
-                if (face.is_recognized) {
-                  // Glowing Green Box
-                  ctx.strokeStyle = "#10b981";
-                  ctx.lineWidth = 2.5;
-                  ctx.strokeRect(x, y, w, h);
-
-                  // Corner Brackets
-                  const lineLen = Math.min(22, w / 4);
-                  ctx.strokeStyle = "#38bdf8";
-                  ctx.lineWidth = 4;
-                  ctx.beginPath();
-                  ctx.moveTo(x, y + lineLen); ctx.lineTo(x, y); ctx.lineTo(x + lineLen, y);
-                  ctx.moveTo(x + w - lineLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + lineLen);
-                  ctx.moveTo(x, y + h - lineLen); ctx.lineTo(x, y + h); ctx.lineTo(x + lineLen, y + h);
-                  ctx.moveTo(x + w - lineLen, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - lineLen);
-                  ctx.stroke();
-
-                  // Student Label
-                  const rollTag = face.roll_number ? ` (${face.roll_number})` : "";
-                  const label = `${face.full_name || "Enrolled Student"}${rollTag} • ${(face.confidence * 100).toFixed(0)}% MATCH`;
-                  ctx.font = "bold 12px sans-serif";
-                  const textWidth = ctx.measureText(label).width;
-                  ctx.fillStyle = "rgba(16, 185, 129, 0.95)";
-                  const labelY = Math.max(0, y - 28);
-                  ctx.fillRect(x, labelY, textWidth + 18, 28);
-                  ctx.fillStyle = "#ffffff";
-                  ctx.fillText(label, x + 9, labelY + 19);
-
-                  // Verified Student Tag
-                  ctx.fillStyle = "rgba(2, 132, 199, 0.9)";
-                  ctx.fillRect(x, y + h + 4, 150, 20);
-                  ctx.fillStyle = "#ffffff";
-                  ctx.font = "bold 10px monospace";
-                  ctx.fillText("✓ VERIFIED STUDENT", x + 6, y + h + 18);
-                } else if (face.spoof_detected) {
-                  ctx.strokeStyle = "#ef4444";
-                  ctx.lineWidth = 2.5;
-                  ctx.strokeRect(x, y, w, h);
-                  ctx.fillStyle = "rgba(239, 68, 68, 0.95)";
-                  ctx.fillRect(x, Math.max(0, y - 26), 180, 26);
-                  ctx.fillStyle = "#ffffff";
-                  ctx.font = "bold 11px sans-serif";
-                  ctx.fillText("ALERT: SPOOF DETECTED", x + 8, Math.max(0, y - 26) + 18);
-                } else {
-                  ctx.strokeStyle = "#94a3b8";
-                  ctx.lineWidth = 2;
-                  ctx.strokeRect(x, y, w, h);
-                  const label = `Face #${idx + 1}: Unregistered / Unknown`;
-                  ctx.fillStyle = "rgba(51, 65, 85, 0.95)";
-                  ctx.fillRect(x, Math.max(0, y - 26), 215, 26);
-                  ctx.fillStyle = "#ffffff";
-                  ctx.font = "bold 11px sans-serif";
-                  ctx.fillText(label, x + 8, Math.max(0, y - 26) + 17);
-                }
+                drawBiometricFaceMesh(
+                  ctx,
+                  x,
+                  y,
+                  w,
+                  h,
+                  face.is_recognized,
+                  face.spoof_detected,
+                  face.landmarks,
+                  {
+                    name: face.full_name || undefined,
+                    roll: face.roll_number || undefined,
+                    confidence: face.confidence,
+                  }
+                );
               });
             } else if (recList.length > 0) {
               recList.forEach((st) => {
                 const [x, y, w, h] = st.bounding_box;
-                ctx.strokeStyle = "#10b981";
-                ctx.lineWidth = 2.5;
-                ctx.strokeRect(x, y, w, h);
-                const label = `${st.full_name} (${st.roll_number}) • ${(st.confidence * 100).toFixed(0)}% MATCH`;
-                ctx.font = "bold 12px sans-serif";
-                const textWidth = ctx.measureText(label).width;
-                ctx.fillStyle = "rgba(16, 185, 129, 0.95)";
-                const labelY = Math.max(0, y - 28);
-                ctx.fillRect(x, labelY, textWidth + 18, 28);
-                ctx.fillStyle = "#ffffff";
-                ctx.fillText(label, x + 9, labelY + 19);
+                drawBiometricFaceMesh(
+                  ctx,
+                  x,
+                  y,
+                  w,
+                  h,
+                  true,
+                  st.spoof_detected,
+                  null,
+                  {
+                    name: st.full_name,
+                    roll: st.roll_number,
+                    confidence: st.confidence,
+                  }
+                );
               });
             }
           }
@@ -973,6 +1205,52 @@ export default function CCTVPage() {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Sim Feed</span>
           </button>
+
+          {/* Biometric Mesh Sticks Preview Selector */}
+          {useVirtualCam && (
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-purple-50 border border-purple-200">
+              <span className="text-[11px] font-bold text-purple-900 px-1.5">Biometric Sticks:</span>
+              <button
+                onClick={() => {
+                  setSimulatedMatchStatus("MATCHED");
+                  setRecognizedFaces([
+                    {
+                      student_id: 1,
+                      roll_number: "CS-2024-001",
+                      full_name: "Kushal Student",
+                      confidence: 0.94,
+                      bounding_box: [160, 100, 200, 220],
+                      liveness_score: 0.98,
+                      spoof_detected: false,
+                      verification_method: "FACE_RECOGNITION",
+                    },
+                  ]);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                  simulatedMatchStatus === "MATCHED"
+                    ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400"
+                    : "bg-white text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Matched (Green Sticks)</span>
+              </button>
+              <button
+                onClick={() => {
+                  setSimulatedMatchStatus("UNMATCHED");
+                  setRecognizedFaces([]);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                  simulatedMatchStatus === "UNMATCHED"
+                    ? "bg-red-600 text-white shadow-sm ring-1 ring-red-400"
+                    : "bg-white text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-red-400" />
+                <span>Unmatched (Red Sticks)</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -10,10 +10,15 @@ client = TestClient(app)
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_database():
+    from app.core.config import settings
+    prev_otp_setting = settings.REQUIRE_EMAIL_OTP
+    settings.REQUIRE_EMAIL_OTP = True
     init_db()
     db = SessionLocal()
     seed_default_users(db)
     db.close()
+    yield
+    settings.REQUIRE_EMAIL_OTP = prev_otp_setting
 
 def test_login_triggers_otp_dispatch():
     """Verify that valid login credentials trigger OTP dispatch when 2FA is active."""
