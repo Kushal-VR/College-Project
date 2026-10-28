@@ -50,25 +50,42 @@ def list_timetable(
     subject_id: Optional[int] = None,
     day_of_week: Optional[str] = None,
     classroom: Optional[str] = None,
+    section: Optional[str] = None,
+    semester: Optional[int] = None,
+    view_mode: Optional[str] = None,  # "all", "cohort", "taught_by_me"
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """List timetable slots with optional filters."""
-    query = db.query(Timetable)
+    """List timetable slots with optional filters for section, semester, and cohort."""
+    query = db.query(Timetable).join(Timetable.subject)
     
-    # If logged in as faculty, default filter to their own classes if not admin
-    if current_user.role == UserRole.FACULTY and not faculty_id:
-        faculty = db.query(Faculty).filter(Faculty.user_id == current_user.id).first()
-        if faculty:
-            query = query.filter(Timetable.faculty_id == faculty.id)
+    faculty_profile = None
+    if current_user.role == UserRole.FACULTY:
+        faculty_profile = db.query(Faculty).filter(Faculty.user_id == current_user.id).first()
 
-    if faculty_id:
+    # Determine section filtering
+    target_section = section
+    if not target_section and current_user.role == UserRole.FACULTY and view_mode != "all" and view_mode != "taught_by_me":
+        # Default to faculty's monitored class/cohort (e.g. "A")
+        if faculty_profile and faculty_profile.class_teacher_section:
+            target_section = faculty_profile.class_teacher_section
+
+    if target_section and target_section != "ALL":
+        query = query.filter(Timetable.section == target_section)
+
+    if semester and semester > 0:
+        query = query.filter(Subject.semester == semester)
+
+    if view_mode == "taught_by_me" and faculty_profile:
+        query = query.filter(Timetable.faculty_id == faculty_profile.id)
+    elif faculty_id:
         query = query.filter(Timetable.faculty_id == faculty_id)
+
     if subject_id:
         query = query.filter(Timetable.subject_id == subject_id)
-    if day_of_week:
+    if day_of_week and day_of_week != "ALL":
         query = query.filter(Timetable.day_of_week.ilike(day_of_week))
-    if classroom:
+    if classroom and classroom != "ALL":
         query = query.filter(Timetable.classroom.ilike(classroom))
 
     slots = query.order_by(Timetable.day_of_week.asc(), Timetable.start_time.asc()).all()
